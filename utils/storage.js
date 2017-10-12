@@ -21,4 +21,4 @@ const set = (context, newData) => {
 
 
 }
-module.exports = {get, set}
+module.exports = {get: get, set: set}

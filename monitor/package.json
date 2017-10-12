@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "scripts": {
-    "start:monitor": "wt serve ./monitor/goodreads-monitor.js --hostname localhost --port 1234 --secrets-file ./monitor/production-secrets --storage-file ./monitor/storage-file --meta-file ./monitor/meta-file",
-    "start:notifiers": "wt serve ./notifiers/mailgun/mailgun.js --hostname localhost --port 1235 --secrets-file ./monitor/production-secrets"
-  },
   "dependencies": {
     "axios": "0.15.2",
     "lodash": "^4.17.4",
