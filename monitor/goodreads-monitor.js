@@ -3,17 +3,36 @@
 const goodreads = require('./goodreads-api');
 const storage = require('../utils/storage');
 const GOODREADS_USERS = require('./goodreads-users');
+const axios = require('axios');
 const _ = require('lodash');
 module.exports = (context, cb) => {
-  var goodReadsUsers = GOODREADS_USERS;
-  console.warn(goodReadsUsers);
-  processUser(context, goodReadsUsers[0])
-    .then(() => {
-      cb(null, {done: 'true'})
+  var allUsers = _.map(GOODREADS_USERS, (goodReadsUser, index) => {
+    return new Promise(function(resolve, reject) {
+      // Naive queuing of processing each user to not violate goodreads API terms (1req/sec)
+      setTimeout(() => {
+        processUser(context, goodReadsUser.id).then((result) => {
+          return resolve({
+            user: goodReadsUser,
+            newBooks: result
+          });
+        })
+      }, index * 1500);
+    });
+  });
+
+  Promise.all(allUsers)
+    .then((results) => {
+      console.warn(results);
+      // Fire and forget on this one.
+      axios.post(context.meta.NOTIFY_WEBHOOK, {
+        params: results
+      });
+      return cb(null, results)
     })
     .catch((error) => {
       cb(error);
     });
+
 };
 
 function processUser(context, userId) {
@@ -34,19 +53,16 @@ function processUser(context, userId) {
   */
   return Promise.all([toRead, currentData])
     .then((promises) => {
-      let newBooks = promises[0];
-      let currentData = promises[1];
-      let currentBooks = _.get(currentData, userId, {});
+      let remoteBooks = promises[0];
+      let localData = promises[1];
 
-      return {
-        [userId]: newBooks
-      };
-    })
-    .then((updatedData) => {
-      return storage.set(context, updatedData);
-    })
-    .then(() => {
-      return storage.get(context).then(console.log);
+      return storage.set(context, {
+        [userId]: remoteBooks
+      }).then(() => {
+        let localBooks = _.get(localData, userId, {});
+        let newBooksById = determineDifference(localBooks, remoteBooks);
+        return _.pick(remoteBooks, newBooksById);
+      });
     });
 }
 
@@ -59,8 +75,17 @@ function processGoodreadsReviews(reviews) {
     if (!bookId) { return memo; }
     memo[bookId] = {
       id: bookId,
-      link: _.get(review, 'book.link', '')
+      link: _.get(review, 'book.link', ''),
+      title: _.get(review, 'book.title')
     }
     return memo;
   }, {});
+}
+
+/*
+ Determine the difference between lists
+*/
+function determineDifference(currentBooks, newBooks) {
+  // I want to get the books that are in newBooks, but not in currentBooks, as an arry of ids
+  return _.difference(_.keys(newBooks), _.keys(currentBooks));
 }
