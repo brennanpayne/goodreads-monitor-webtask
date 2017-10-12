@@ -2,11 +2,22 @@
 
 const goodreads = require('./goodreads-api');
 const storage = require('../utils/storage');
+const GOODREADS_USERS = require('./goodreads-users');
 const _ = require('lodash');
 module.exports = (context, cb) => {
-  var goodReadsUsers = context.meta.GOODREADS_USERS;
-  console.warn(context.meta);
-  var toRead = goodreads.fetchToReadShelf(context.secrets.GOODREADS_KEY, goodReadsUsers[0])
+  var goodReadsUsers = GOODREADS_USERS;
+  console.warn(goodReadsUsers);
+  processUser(context, goodReadsUsers[0])
+    .then(() => {
+      cb(null, {done: 'true'})
+    })
+    .catch((error) => {
+      cb(error);
+    });
+};
+
+function processUser(context, userId) {
+  var toRead = goodreads.fetchToReadShelf(context.secrets.GOODREADS_KEY, userId)
     .then((response) =>  _.get(response, 'data.GoodreadsResponse.reviews.review', []))
     .then(processGoodreadsReviews);
   var currentData = storage.get(context);
@@ -21,14 +32,14 @@ module.exports = (context, cb) => {
     [userId#2]: {...}
   }
   */
-  Promise.all([toRead, currentData])
+  return Promise.all([toRead, currentData])
     .then((promises) => {
       let newBooks = promises[0];
       let currentData = promises[1];
-      let currentBooks = _.get(currentData, context.secrets.GOODREADS_USER_ID, {});
+      let currentBooks = _.get(currentData, userId, {});
 
       return {
-        [context.secrets.GOODREADS_USER_ID]: newBooks
+        [userId]: newBooks
       };
     })
     .then((updatedData) => {
@@ -36,14 +47,8 @@ module.exports = (context, cb) => {
     })
     .then(() => {
       return storage.get(context).then(console.log);
-    })
-    .then(() => {
-      cb(null, {done: 'true'})
-    })
-    .catch((error) => {
-      cb(error);
     });
-};
+}
 
 /*
  Creates the map of bookIds to their metadata
