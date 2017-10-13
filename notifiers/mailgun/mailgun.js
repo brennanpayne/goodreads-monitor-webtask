@@ -3,16 +3,15 @@ const _ = require('lodash');
 
 module.exports = (context, cb) => {
   var users = context.body;
-  var notifications = _.map(users, (user) => {
+  var notifications = _.reduce(users, (user) => {
     if (_.keys(user.newBooks).length > 0) {
-      return notify(context, user);
-    } else {
-      return Promise.resolve();
+      memo.push(notify(context, user));
     }
-  });
+    return memo;
+  }, []);
   Promise.all(notifications)
-    .then((results) => {
-      cb(null, results);
+    .then((emails) => {
+      cb(null, emails);
     })
     .catch((error) => {
       cb(error)
