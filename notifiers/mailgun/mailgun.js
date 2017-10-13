@@ -11,8 +11,8 @@ module.exports = (context, cb) => {
     }
   });
   Promise.all(notifications)
-    .then(() => {
-      cb(null, 200)
+    .then((results) => {
+      cb(null, results);
     })
     .catch((error) => {
       cb(error)

@@ -24,10 +24,11 @@ module.exports = (context, cb) => {
     .then((results) => {
       console.warn(results);
       // Fire and forget on this one.
-      axios.post(context.meta.NOTIFY_WEBHOOK, {
+      return axios.post(context.meta.NOTIFY_WEBHOOK, {
         params: results
+      }).then(() => {
+        return cb(null, results);
       });
-      return cb(null, results)
     })
     .catch((error) => {
       cb(error);

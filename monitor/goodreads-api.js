@@ -4,11 +4,16 @@ var parser = require('xml2json');
 
 const GOODREADS_ENDPOINT = "https://www.goodreads.com";
 axios.defaults.baseURL = GOODREADS_ENDPOINT;
-axios.defaults.transformResponse = [
-  function(data) {
+const parseXML = function(data) {
+  try {
     return parser.toJson(data, {object: true}); //Parse XML into JS object
+  } catch (e) {
+    console.warn('Parsing XML error');
+    console.warn(e);
+    console.warn(data);
+    return {}
   }
-]
+}
 
 
 const goodreads = {
@@ -26,7 +31,8 @@ const goodreads = {
         shelf: 'to-read',
         key: key
       },
-      responseType: 'document'
+      responseType: 'document',
+      transformResponse: [parseXML]
     });
   }
 }
