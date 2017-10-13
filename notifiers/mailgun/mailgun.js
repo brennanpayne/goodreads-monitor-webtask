@@ -35,7 +35,7 @@ function notify(context, user) {
   const mailgun = require('mailgun-js')({ apiKey: context.secrets.MAILGUN_API_KEY, domain: context.secrets.MAILGUN_DOMAIN });
 
   var data = {
-    from: 'Brennan <brennan@itasca-software.com>',
+    from: 'Goodreads Notifier <brennan@itasca-software.com>',
     to: context.meta.NOTIFY_EMAIL,
     subject: `${user.user.name} has added some new books to her list!`,
     text: buildText(user),
