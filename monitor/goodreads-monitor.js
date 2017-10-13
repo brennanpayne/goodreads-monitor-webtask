@@ -23,10 +23,8 @@ module.exports = (context, cb) => {
   Promise.all(allUsers)
     .then((results) => {
       console.warn(results);
-      // Fire and forget on this one.
-      return axios.post(context.meta.NOTIFY_WEBHOOK, {
-        params: results
-      }).then(() => {
+      return axios.post(context.meta.NOTIFY_WEBHOOK, results)
+      .then(() => {
         return cb(null, results);
       });
     })
