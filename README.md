@@ -12,6 +12,15 @@ Example:
 NOTIFY_WEBHOOK="https://wt-859c0e2cb1760add6e7813f538214600-0.run.webtask.io/mailgun"
 ```
 
+##### Expected Secrets
+`GOODREADS_KEY`: Goodreads API Key.  Found [here](https://www.goodreads.com/api/keys).
+
+Example:
+```
+GOODREADS_KEY="123abc"
+```
+
+
 ##### Goodreads Users To Monitor
 Found in `goodreads-users`, list the Goodreads UserId & the Name (used in the email), to monitor.
 
@@ -28,15 +37,6 @@ Example:
   }
 ]
 ```
-
-##### Expected Secrets
-`GOODREADS_KEY`: Goodreads API Key
-
-Example:
-```
-GOODREADS_KEY="123abc"
-```
-
 
 ### Monitor
 #### Mailgun
