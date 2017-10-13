@@ -3,7 +3,7 @@ const _ = require('lodash');
 
 module.exports = (context, cb) => {
   var users = context.body;
-  var notifications = _.reduce(users, (user) => {
+  var notifications = _.reduce(users, (memo, user) => {
     if (_.keys(user.newBooks).length > 0) {
       memo.push(notify(context, user));
     }
